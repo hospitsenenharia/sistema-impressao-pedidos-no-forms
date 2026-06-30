@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+margin:0;
+padding:0;
+font-family:Arial;
+background:#f3f4f6;
+}
+
+.login{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:linear-gradient(
+135deg,
+#16a34a,
+#22c55e,
+#4ade80
+);
+}
+
+.box{
+background:white;
+padding:40px;
+border-radius:20px;
+width:420px;
+box-shadow:0 20px 50px rgba(0,0,0,.15);
+}
+
+input{
+width:100%;
+padding:12px;
+margin-top:10px;
+border:1px solid #ccc;
+border-radius:8px;
+box-sizing:border-box;
+}
+
+button{
+padding:10px 14px;
+border:none;
+border-radius:8px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.btnReimprimir,
+.btnEditar,
+.btnExcluir,
+.btnAtender{
+padding:6px 10px;
+font-size:12px;
+}
+.btnLogin{
+width:100%;
+background:#22c55e;
+color:white;
+margin-top:15px;
+}
+
+.topo{
+background:#16a34a;
+color:white;
+padding:15px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.container{
+padding:20px;
+}
+
+.pesquisa{
+padding:12px;
+width:100%;
+margin-bottom:20px;
+border-radius:10px;
+border:1px solid #ccc;
+}
+
+.dashboard{
+display:grid;
+grid-template-columns:
+repeat(auto-fit,minmax(180px,1fr));
+gap:15px;
+margin-bottom:20px;
+}
+
+
+.cardRelatorio{
+background:white;
+padding:20px;
+border-radius:20px;
+box-shadow:0 5px 20px rgba(0,0,0,.08);
+}
+
+canvas{
+max-width:320px !important;
+max-height:320px !important;
+margin:auto;
+display:block;
+}
+
+.boxDash{
+background:white;
+padding:30px;
+border-radius:20px;
+text-align:center;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+border-top:6px solid #16a34a;
+transition:.3s;
+}
+
+.boxDash:hover{
+transform:translateY(-8px);
+box-shadow:0 20px 40px rgba(0,0,0,.15);
+}
+
+.menuBtn{
+background:white;
+padding:15px 25px;
+border-radius:15px;
+border:2px solid #e5e7eb;
+font-size:16px;
+font-weight:bold;
+box-shadow:0 4px 12px rgba(0,0,0,.08);
+transition:.3s;
+}
+
+.menuBtn:hover{
+background:#16a34a;
+color:white;
+transform:translateY(-3px);
+}
+  
+.btnAtender{
+background:#22c55e;
+color:white;
+}
+
+.btnReimprimir{
+background:#2563eb;
+color:white;
+}
+
+.btnEditar{
+background:#f59e0b;
+color:white;
+}
+
+.btnExcluir{
+background:#dc2626;
+color:white;
+}
+
+.tabelaPedidos{
+width:100%;
+border-collapse:collapse;
+background:white;
+border-radius:10px;
+overflow:hidden;
+margin-bottom:30px;
+}
+
+.tabelaPedidos th{
+background:#16a34a;
+color:white;
+padding:12px;
+font-size:14px;
+}
+
+.tabelaPedidos td{
+padding:12px;
+border-bottom:1px solid #ddd;
+font-size:14px;
+}
+
+.tabelaPedidos tr:hover{
+background:#f3f4f6;
+cursor:pointer;
+}
+
+button:hover{
+opacity:.85;
+transform:scale(1.02);
+transition:.2s;
+}
+
+input:focus{
+outline:none;
+border:2px solid #22c55e;
+}
+
+
+</style>
+
+</head>
+
+<body>
+
+<div id="loginTela" class="login">
+
+<div class="box">
+
+<div style="text-align:center">
+
+<h1>🥗</h1>
+
+<h2>DIVINA SALADA</h2>
+
+<p>
+Sistema de Gestão de Pedidos
+</p>
+
+</div>
+
+<input
+type="email"
+id="usuario"
+placeholder="E-mail">
+
+<input
+type="password"
+id="senha"
+placeholder="Senha">
+  
+<button
+class="btnLogin"
+onclick="fazerLogin()">
+
+ENTRAR
+
+</button>
+
+</div>
+
+</div>
+
+<div id="painel" style="display:none;">
+
+<div class="topo">
+
+<h2>DIVINA SALADA</h2>
+
+<button onclick="logout()">
+
+SAIR
+
+</button>
+
+</div>
+
+<div class="container">
+
+<div style="
+display:flex;
+gap:10px;
+margin-bottom:20px;
+flex-wrap:wrap;
+">
+
+<button class="menuBtn"
+onclick="mostrarAba('dashboard')">
+📊 DASHBOARD
+</button>
+
+<button class="menuBtn"
+onclick="mostrarAba('pendentes')">
+🍽️ PEDIDOS
+</button>
+
+<button class="menuBtn"
+onclick="mostrarAba('atendidos')">
+✅ ATENDIDOS
+</button>
+
+<button class="menuBtn"
+onclick="mostrarAba('historico')">
+📚 HISTÓRICO
+</button>
+
+<button class="menuBtn"
+onclick="mostrarAba('estatisticas')">
+📈 ESTATÍSTICAS
+</button>
+
+</div>
+
+<div id="abaDashboard">
+
+ 
+
+<div class="dashboard">
+
+<div class="boxDash">
+📋 Hoje<br>
+<span id="totalHoje">0</span>
+</div>
+
+<div class="boxDash">
+⏳ Pendentes<br>
+<span id="totalPendentes">0</span>
+</div>
+
+<div class="boxDash">
+✅ Atendidos<br>
+<span id="totalAtendidos">0</span>
+</div>
+
+</div>
+
+<div style="
+background:white;
+padding:20px;
+border-radius:12px;
+">
+
+<h2>STATUS DA COZINHA</h2>
+
+<div
+id="statusCozinha"
+style="
+font-size:22px;
+font-weight:bold;
+">
+
+🟢 Cozinha Livre
+
+</div>
+
+<br>
+
+<h2>ÚLTIMO PEDIDO</h2>
+
+<div id="ultimoPedido">
+
+Nenhum
+
+</div>
+
+</div>
+
+</div>
+
+
+<div id="abaPendentes" style="display:none;">
+
+<h1>Pedidos Pendentes</h1>
+
+<input
+id="pesquisaPendentes"
+class="pesquisa"
+placeholder="Pesquisar"
+onkeyup="filtrarPedidos('pendentes')"
+>
+
+<table class="tabelaPedidos">
+
+<thead>
+
+<tr>
+
+<th>ID</th>
+<th>CLIENTE</th>
+<th>LOCAL</th>
+<th>STATUS</th>
+<th>AÇÕES</th>
+
+</tr>
+
+</thead>
+
+<tbody id="pedidosPendentes"></tbody>
+
+</table>
+
+</div>
+
+<div id="abaHistorico" style="display:none;">
+
+<h1>📚 Histórico de Pedidos</h1>
+
+<input
+id="pesquisaHistorico"
+class="pesquisa"
+placeholder="Pesquisar cliente">
+
+<div style="
+display:flex;
+gap:10px;
+margin-bottom:20px;
+flex-wrap:wrap;
+">
+
+<label>Data Inicial</label>
+<input type="date" id="dataInicial">
+
+<label>Data Final</label>
+<input type="date" id="dataFinal">
+
+<button onclick="carregarHistorico()">
+🔍 Filtrar
+</button>
+
+</div>
+
+<table class="tabelaPedidos">
+
+<thead>
+
+<tr>
+<th>ID</th>
+<th>CLIENTE</th>
+<th>LOCAL</th>
+<th>STATUS</th>
+</tr>
+
+</thead>
+
+<tbody id="historicoPedidos"></tbody>
+
+</table>
+
+</div>
+
+<div id="abaAtendidos" style="display:none;">
+
+<h1>Pedidos Atendidos</h1>
+
+<input
+id="pesquisaAtendidos"
+class="pesquisa"
+placeholder="Pesquisar"
+onkeyup="filtrarPedidos('atendidos')"
+>
+
+<table class="tabelaPedidos">
+
+<thead>
+
+<tr>
+
+<th>ID</th>
+<th>CLIENTE</th>
+<th>LOCAL</th>
+<th>STATUS</th>
+<th>AÇÕES</th>
+
+</tr>
+
+</thead>
+
+<tbody id="pedidosAtendidos"></tbody>
+
+</table>
+
+</div>
+
+<div id="abaEstatisticas" style="display:none;">
+
+<h1>📈 Estatísticas</h1>
+
+<div style="
+display:flex;
+flex-direction:column;
+gap:25px;
+">
+
+<div class="cardRelatorio">
+
+<h2>🍗 PROTEÍNA</h2>
+
+<p id="totalProteina">0 respostas</p>
+
+<div style="
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:20px;
+">
+
+<div style="width:35%;">
+<canvas id="graficoProteina"></canvas>
+</div>
+
+<div id="legendaProteina"
+style="
+width:45%;
+font-size:14px;
+line-height:1.8;
+">
+</div>
+
+</div>
+
+</div>
+
+<div class="cardRelatorio">
+
+<h2>🥤 BEBIDAS</h2>
+
+<p id="totalBebida">0 respostas</p>
+
+<div style="
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:30px;
+">
+
+<div style="width:45%;">
+<canvas id="graficoBebida"></canvas>
+</div>
+
+<div
+id="legendaBebida"
+style="
+width:45%;
+font-size:15px;
+line-height:2;
+">
+</div>
+
+</div>
+
+</div>
+
+<div class="cardRelatorio">
+
+<h2>💳 PAGAMENTOS</h2>
+
+<p id="totalPagamento">0 respostas</p>
+
+<div style="
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:30px;
+">
+
+<div style="width:45%;">
+<canvas id="graficoPagamento"></canvas>
+</div>
+
+<div
+id="legendaPagamento"
+style="
+width:45%;
+font-size:15px;
+line-height:2;
+">
+</div>
+
+</div>
+
+</div>
+
+<div class="cardRelatorio">
+
+<h2>📍 LOCAL DE ENTREGA</h2>
+
+<p id="totalLocal">0 respostas</p>
+
+<div style="
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:30px;
+">
+
+<div style="width:45%;">
+<canvas id="graficoLocal"></canvas>
+</div>
+
+<div
+id="legendaLocal"
+style="
+width:45%;
+font-size:15px;
+line-height:2;
+">
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div id="modalEditar" style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.6);
+justify-content:center;
+align-items:center;
+z-index:9999;
+">
+
+<div style="
+background:white;
+padding:25px;
+border-radius:15px;
+width:700px;
+max-height:90vh;
+overflow:auto;
+">
+
+<h2>✏️ Editar Pedido</h2>
+
+<input id="ed_nome" placeholder="Nome">
+
+<input id="ed_local" placeholder="Local">
+
+<input id="ed_tamanho" placeholder="Tamanho">
+
+<input id="ed_proteina" placeholder="Proteína">
+
+<input id="ed_guarnicoes" placeholder="Guarnições">
+
+<input id="ed_molho" placeholder="Molho">
+
+<input id="ed_mix" placeholder="Mix de Folhas">
+
+<input id="ed_talher" placeholder="Talher">
+
+<input id="ed_sobremesa" placeholder="Sobremesa">
+
+<input id="ed_bebida" placeholder="Bebida">
+
+<input id="ed_pagamento" placeholder="Pagamento">
+
+<input id="ed_endereco" placeholder="Endereço">
+
+<br><br>
+
+<button onclick="salvarEdicao()">
+💾 Salvar
+</button>
+
+<button onclick="
+document.getElementById('modalEditar').style.display='none'
+">
+❌ Cancelar
+</button>
+
+</div>
+
+</div>
+
+<script>
+  
+const supabaseUrl =
+"https://iwvyptljwwdqmpixgpyc.supabase.co";
+
+const supabaseKey =
+"sb_publishable_UwCk5xuRDMSfXnzZjbMNvw_u_QaXulQ";
+
+const client =
+window.supabase.createClient(
+supabaseUrl,
+supabaseKey
+);
+
+let pedidoEditando = null;
+
+async function verificarLogin(){
+
+const { data } =
+await client.auth.getSession();
+
+if(data.session){
+
+document.getElementById("loginTela")
+.style.display = "none";
+
+document.getElementById("painel")
+.style.display = "block";
+
+mostrarAba("dashboard");
+
+carregarDashboard();
+
+}
+
+}
+
+verificarLogin();
+
+async function fazerLogin(){
+
+const email =
+document.getElementById("usuario").value;
+
+const senha =
+document.getElementById("senha").value;
+
+const { data, error } =
+await client.auth.signInWithPassword({
+
+email: email,
+password: senha
+
+});
+
+console.log("DATA:", data);
+console.log("ERROR:", error);
+
+if(error){
+
+alert("ERRO:\n\n" + error.message);
+
+return;
+
+}
+
+document.getElementById("loginTela")
+.style.display = "none";
+
+document.getElementById("painel")
+.style.display = "block";
+
+mostrarAba("dashboard");
+
+carregarDashboard();
+
+}
+
+async function logout(){
+
+await client.auth.signOut();
+
+location.reload();
+
+}
+
+function mostrarAba(aba){
+
+document.getElementById("abaDashboard").style.display = "none";
+
+document.getElementById("abaPendentes").style.display = "none";
+
+document.getElementById("abaAtendidos").style.display = "none";
+
+document.getElementById("abaHistorico").style.display = "none";
+
+document.getElementById("abaEstatisticas").style.display = "none";
+
+if(aba === "dashboard"){
+
+document.getElementById("abaDashboard")
+.style.display = "block";
+
+}
+
+
+if(aba === "pendentes"){
+
+document.getElementById("abaPendentes")
+.style.display = "block";
+
+}
+
+
+if(aba === "historico"){
+
+document.getElementById("abaHistorico")
+.style.display = "block";
+
+carregarHistorico();
+
+}
+
+if(aba === "atendidos"){
+
+document.getElementById("abaAtendidos")
+.style.display = "block";
+
+}
+
+if(aba === "estatisticas"){
+
+document.getElementById("abaEstatisticas")
+.style.display = "block";
+
+carregarEstatisticas();
+
+
+
+}
+
+}
+
+function filtrarPedidos(tipo){
+
+const valor = document.getElementById(
+
+tipo === "pendentes"
+? "pesquisaPendentes"
+: "pesquisaAtendidos"
+
+).value.toLowerCase();
+
+const lista = tipo === "pendentes"
+
+? document.querySelectorAll("#pedidosPendentes .pedidoItem")
+
+: document.querySelectorAll("#pedidosAtendidos .pedidoItem");
+
+lista.forEach(item => {
+
+const texto =
+item.innerText.toLowerCase();
+
+item.style.display =
+texto.includes(valor)
+? "table-row"
+: "none";
+
+});
+
+}
+
+
+async function carregarHistorico(){
+
+const nome =
+document.getElementById("pesquisaHistorico")
+.value.toLowerCase();
+
+const dataInicial =
+document.getElementById("dataInicial").value;
+
+const dataFinal =
+document.getElementById("dataFinal").value;
+
+const { data } = await client
+.from("pedidos")
+.select("*")
+.order("id",{ascending:false});
+
+let pedidos = data || [];
+
+if(nome){
+
+pedidos = pedidos.filter(p =>
+(p.nome || "")
+.toLowerCase()
+.includes(nome)
+);
+
+}
+
+if(dataInicial){
+
+pedidos = pedidos.filter(p => {
+
+if(!p.criado_em) return false;
+
+return p.criado_em.substring(0,10)
+>= dataInicial;
+
+});
+
+}
+
+if(dataFinal){
+
+pedidos = pedidos.filter(p => {
+
+if(!p.criado_em) return false;
+
+return p.criado_em.substring(0,10)
+<= dataFinal;
+
+});
+
+}
+
+let html = "";
+
+pedidos.forEach(pedido=>{
+
+html += `
+
+<tr>
+
+<td>${pedido.id}</td>
+
+<td>
+${pedido.nome}<br>
+<small>${pedido.data_hora || ""}</small>
+</td>
+
+<td>${pedido.local_entrega || ""}</td>
+
+<td>${pedido.status || ""}</td>
+
+</tr>
+
+`;
+
+});
+
+document.getElementById(
+"historicoPedidos"
+).innerHTML = html;
+
+}
+
+async function carregarDashboard(){
+
+const { data } = await client
+.from("pedidos")
+.select("*")
+.order("id",{ ascending:false });
+
+if(!data) return;
+
+const pendentes =
+data.filter(p => p.status !== "ATENDIDO");
+
+const atendidos =
+data.filter(
+p => p.status === "ATENDIDO"
+);
+
+const hoje = new Date()
+.toLocaleDateString("pt-BR");
+
+const pendentesHoje =
+data.filter(p => {
+
+if(p.status === "ATENDIDO")
+return false;
+
+if(!p.data_hora)
+return false;
+
+return p.data_hora.includes(hoje);
+
+});
+
+const atendidosHoje =
+data.filter(p => {
+
+if(p.status !== "ATENDIDO")
+return false;
+
+if(!p.data_hora)
+return false;
+
+return p.data_hora.includes(hoje);
+
+});
+
+const pedidosHoje = data.filter(p => {
+
+if(!p.data_hora) return false;
+
+return p.data_hora.includes(hoje);
+
+});
+
+document.getElementById("totalHoje")
+.innerText = pedidosHoje.length;
+
+document.getElementById("totalPendentes")
+.innerText = pendentesHoje.length;
+
+document.getElementById("totalAtendidos")
+.innerText = atendidosHoje.length;
+
+if(pendentes.length >= 10){
+
+document.getElementById("statusCozinha")
+.innerHTML = "🔴 Cozinha Lotada";
+
+}else if(pendentes.length >= 5){
+
+document.getElementById("statusCozinha")
+.innerHTML = "🟡 Movimento Alto";
+
+}else{
+
+document.getElementById("statusCozinha")
+.innerHTML = "🟢 Cozinha Livre";
+
+}
+
+
+
+if(data.length > 0){
+
+const ultimo = data[0];
+
+document.getElementById("ultimoPedido")
+.innerHTML = `
+
+<b>${ultimo.nome}</b><br>
+${ultimo.local_entrega}
+
+`;
+
+}
+
+renderizarPedidos(
+pendentes,
+"pedidosPendentes",
+false
+);
+
+renderizarPedidos(
+atendidos,
+"pedidosAtendidos",
+true
+);
+
+
+}
+
+
+function renderizarPedidos(
+lista,
+divId,
+atendido
+){
+
+const div =
+document.getElementById(divId);
+
+if(lista.length === 0){
+
+div.innerHTML = `
+
+<tr>
+<td colspan="5">
+Nenhum pedido.
+</td>
+</tr>
+
+`;
+
+return;
+
+}
+
+let html = "";
+
+lista.forEach(pedido => {
+
+html += `
+
+<tr class="pedidoItem">
+
+<td>${pedido.id}</td>
+
+<td>
+<b>${pedido.nome}</b><br>
+<small style="color:gray">
+📅 ${pedido.data_hora || ""}
+</small>
+</td>
+
+<td>${pedido.local_entrega}</td>
+
+<td>
+${atendido ? "ATENDIDO" : "PENDENTE"}
+</td>
+
+<td style="
+display:flex;
+gap:5px;
+flex-wrap:wrap;
+">
+
+${!atendido ? `
+
+<button
+class="btnAtender"
+onclick="atenderPedido(${pedido.id})">
+
+ATENDER
+
+</button>
+
+` : ""}
+
+<button
+class="btnEditar"
+onclick="editarPedido(${pedido.id})">
+
+EDITAR
+
+</button>
+
+<button
+class="btnReimprimir"
+onclick="imprimirPedido(${pedido.id})">
+
+${atendido ? "REIMPRIMIR" : "IMPRIMIR"}
+
+</button>
+
+<button
+class="btnExcluir"
+onclick="excluirPedido(${pedido.id})">
+
+EXCLUIR
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+div.innerHTML = html;
+
+}
+
+async function atenderPedido(id){
+
+await client
+.from("pedidos")
+.update({
+
+status:"ATENDIDO"
+
+})
+.eq("id",id);
+
+carregarDashboard();
+
+}
+
+async function excluirPedido(id){
+
+const confirma =
+confirm("Deseja excluir?");
+
+if(!confirma) return;
+
+await client
+.from("pedidos")
+.delete()
+.eq("id",id);
+
+alert("Pedido excluído!");
+
+carregarDashboard();
+
+}
+async function editarPedido(id){
+
+pedidoEditando = id;
+
+const { data } = await client
+.from("pedidos")
+.select("*")
+.eq("id",id)
+.single();
+
+if(!data){
+alert("Pedido não encontrado");
+return;
+}
+
+document.getElementById("ed_nome").value =
+data.nome || "";
+
+document.getElementById("ed_local").value =
+data.local_entrega || "";
+
+document.getElementById("ed_tamanho").value =
+data.tamanho || "";
+
+document.getElementById("ed_proteina").value =
+data.proteina || "";
+
+document.getElementById("ed_guarnicoes").value =
+data.guarnicoes || "";
+
+document.getElementById("ed_molho").value =
+data.molho || "";
+
+document.getElementById("ed_mix").value =
+data.mix_folhas || "";
+
+document.getElementById("ed_talher").value =
+data.talher || "";
+
+document.getElementById("ed_sobremesa").value =
+data.sobremesa || "";
+
+document.getElementById("ed_bebida").value =
+data.bebida || "";
+
+document.getElementById("ed_pagamento").value =
+data.pagamento || "";
+
+document.getElementById("ed_endereco").value =
+data.endereco || "";
+
+document.getElementById("modalEditar")
+.style.display = "flex";
+
+}
+
+  async function salvarEdicao(){
+
+await client
+.from("pedidos")
+.update({
+
+nome:
+document.getElementById("ed_nome").value,
+
+local_entrega:
+document.getElementById("ed_local").value,
+
+tamanho:
+document.getElementById("ed_tamanho").value,
+
+proteina:
+document.getElementById("ed_proteina").value,
+
+guarnicoes:
+document.getElementById("ed_guarnicoes").value,
+
+molho:
+document.getElementById("ed_molho").value,
+
+mix_folhas:
+document.getElementById("ed_mix").value,
+
+talher:
+document.getElementById("ed_talher").value,
+
+sobremesa:
+document.getElementById("ed_sobremesa").value,
+
+bebida:
+document.getElementById("ed_bebida").value,
+
+pagamento:
+document.getElementById("ed_pagamento").value,
+
+endereco:
+document.getElementById("ed_endereco").value
+
+})
+.eq("id", pedidoEditando);
+
+alert("Pedido atualizado com sucesso!");
+
+document.getElementById("modalEditar")
+.style.display = "none";
+
+carregarDashboard();
+
+}
+
+
+  
+async function imprimirPedido(id){
+
+const { data } = await client
+.from("pedidos")
+.select("*")
+.eq("id",id)
+.single();
+
+if(!data){
+alert("Pedido não encontrado");
+return;
+}
+
+const janela =
+window.open("","_blank");
+
+janela.document.write(`
+
+<html>
+
+<head>
+
+<title>Pedido ${data.id}</title>
+
+<style>
+
+@page{
+size:80mm auto;
+margin:3mm;
+}
+
+body{
+font-family:Arial;
+font-size:12px;
+width:72mm;
+margin:auto;
+}
+
+h2{
+text-align:center;
+}
+
+
+
+
+</style>
+
+</head>
+
+<body>
+
+<h2>DIVINA SALADA</h2>
+
+<hr>
+
+<b>PEDIDO:</b> ${data.id}<br>
+<b>CLIENTE:</b> ${data.nome}<br>
+<b>LOCAL:</b> ${data.local_entrega}<br>
+
+<hr>
+
+<b>EMBALAGEM:</b><br>
+${data.tamanho || ""}<br><br>
+
+<b>PROTEÍNA:</b><br>
+${data.proteina || ""}<br><br>
+
+<b>GUARNIÇÕES:</b><br>
+${data.guarnicoes || ""}<br><br>
+
+<b>MOLHO:</b><br>
+${data.molho || ""}<br><br>
+
+<b>MIX DE FOLHAS:</b><br>
+${data.mix_folhas || ""}<br><br>
+
+<b>TALHER:</b><br>
+${data.talher || ""}<br><br>
+
+<b>SOBREMESA:</b><br>
+${data.sobremesa || ""}<br><br>
+
+<b>BEBIDA:</b><br>
+${data.bebida || ""}<br><br>
+
+<hr>
+
+<b>PAGAMENTO:</b><br>
+${data.pagamento || ""}
+
+<hr>
+
+<b>STATUS:</b>
+${data.status}
+
+</body>
+
+</html>
+
+`);
+
+janela.document.close();
+
+setTimeout(()=>{
+janela.print();
+},500);
+
+}
+async function carregarEstatisticas(){
+
+Chart.helpers.each(
+Chart.instances,
+function(instance){
+instance.destroy();
+}
+);
+
+const { data } = await client
+.from("pedidos")
+.select("*");
+
+if(!data || data.length === 0) return;
+
+const proteinas = {};
+const bebidas = {};
+const pagamentos = {};
+const locais = {};
+
+data.forEach(p => {
+
+proteinas[p.proteina || "Não informado"] =
+(proteinas[p.proteina || "Não informado"] || 0) + 1;
+
+bebidas[p.bebida || "Não informado"] =
+(bebidas[p.bebida || "Não informado"] || 0) + 1;
+
+pagamentos[p.pagamento || "Não informado"] =
+(pagamentos[p.pagamento || "Não informado"] || 0) + 1;
+
+locais[p.local_entrega || "Não informado"] =
+(locais[p.local_entrega || "Não informado"] || 0) + 1;
+
+});
+
+new Chart(
+document.getElementById("graficoProteina"),
+{
+type:"doughnut",
+
+data:{
+labels:Object.keys(proteinas),
+
+datasets:[{
+label:"Quantidade",
+data:Object.values(proteinas)
+}]
+},
+
+options:{
+responsive:true,
+plugins:{
+legend:{
+display:false
+}
+}
+}
+}
+);
+
+document.getElementById("totalProteina")
+.innerText = data.length + " respostas";
+
+document.getElementById("legendaProteina")
+.innerHTML =
+Object.entries(proteinas)
+.map(([nome,qtd]) =>
+`<b>${qtd}x</b> ${nome}<br>`
+)
+.join("<br>");
+
+new Chart(
+document.getElementById("graficoBebida"),
+{
+type:"doughnut",
+
+data:{
+labels:Object.keys(bebidas),
+datasets:[{
+data:Object.values(bebidas)
+}]
+},
+
+options:{
+plugins:{
+legend:{
+position:"bottom"
+}
+}
+}
+}
+);
+
+
+document.getElementById("totalBebida")
+.innerText = data.length + " respostas";
+
+document.getElementById("legendaBebida")
+.innerHTML =
+Object.entries(bebidas)
+.map(([nome,qtd]) =>
+`<b>${qtd}x</b> ${nome}`
+)
+.join("<br>");
+
+new Chart(
+document.getElementById("graficoPagamento"),
+{
+type:"doughnut",
+
+data:{
+labels:Object.keys(pagamentos),
+datasets:[{
+data:Object.values(pagamentos)
+}]
+},
+
+options:{
+plugins:{
+legend:{
+position:"bottom"
+}
+}
+}
+}
+);
+
+document.getElementById("totalPagamento")
+.innerText = data.length + " respostas";
+
+document.getElementById("legendaPagamento")
+.innerHTML =
+Object.entries(pagamentos)
+.map(([nome,qtd]) =>
+`<b>${qtd}x</b> ${nome}`
+)
+.join("<br>");
+
+
+
+
+new Chart(
+document.getElementById("graficoLocal"),
+{
+type:"doughnut",
+
+data:{
+labels:Object.keys(locais),
+datasets:[{
+data:Object.values(locais)
+}]
+},
+
+options:{
+plugins:{
+legend:{
+position:"bottom"
+}
+}
+}
+}
+);
+
+
+
+document.getElementById("totalLocal")
+.innerText = data.length + " respostas";
+
+document.getElementById("legendaLocal")
+.innerHTML =
+Object.entries(locais)
+.map(([nome,qtd]) =>
+`<b>${qtd}x</b> ${nome}`
+)
+.join("<br>");
+
+}
+
+setInterval(
+carregarDashboard,
+5000
+);
+
+</script>
+
+</body>
+</html>
